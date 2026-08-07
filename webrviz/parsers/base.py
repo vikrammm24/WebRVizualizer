@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from webrviz.models import Endpoint
+from webrviz.models.endpoint import Endpoint
 
 
 class BaseParser(ABC):

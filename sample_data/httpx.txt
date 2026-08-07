@@ -1,3 +1,6 @@
 https://example.com
 https://api.example.com
 https://www.example.com
+https://example.com
+https://example.com/login
+https://api.example.com

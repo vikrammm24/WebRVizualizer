@@ -1,132 +1,102 @@
+from __future__ import annotations
+
 from argparse import ArgumentParser
+from itertools import chain
 from pathlib import Path
+import sys
 
-from rich.console import Console
-from rich.table import Table
-
-from webrviz.parsers import HttpxParser, KatanaParser
-from webrviz.services import ApplicationMerger
-
-console = Console()
+from webrviz.parsers.httpx import HttpxParser
+from webrviz.parsers.katana import KatanaParser
+from webrviz.services.builder import ApplicationBuilder
 
 
-def build_parser() -> ArgumentParser:
+def validate_file(path: Path, name: str) -> None:
     """
-    Configure the command-line interface.
+    Validate that a supplied file exists.
     """
+
+    if path.exists():
+        return
+
+    resolved = path.resolve()
+
+    print()
+
+    print(f"{name} file not found.\n")
+
+    print(f"Provided path : {path}")
+    print(f"Resolved path : {resolved}")
+
+    print("\nRelative paths are resolved from your current working directory.")
+
+    print(
+        "Use an absolute path or run the command from the directory where the file exists."
+    )
+
+    sys.exit(1)
+
+
+def main() -> None:
     parser = ArgumentParser(
         prog="webrviz",
-        description="CLI-based Web Application Mapper",
+        description="WebRViz - Web Application Visualizer",
     )
 
     parser.add_argument(
         "--httpx",
         type=Path,
-        help="Path to the httpx output file",
+        help="Path to httpx output",
     )
 
     parser.add_argument(
         "--katana",
         type=Path,
-        help="Path to the katana output file",
+        help="Path to katana output",
     )
 
-    return parser
-
-def validate_file(
-    parser: ArgumentParser,
-    path: Path | None,
-    tool_name: str,
-) -> None:
-    """
-    Validate that an input file exists.
-    """
-    if path is None:
-        return
-
-    if not path.is_file():
-        parser.error(
-            f"{tool_name} file not found.\n\n"
-            f"  Provided path : {path}\n"
-            f"  Resolved path : {path.resolve()}\n\n"
-            "Relative paths are resolved from your current working directory.\n"
-            "Use an absolute path or run the command from the directory "
-            "where the file exists."
-        )
-
-def validate_inputs(parser: ArgumentParser, args) -> None:
-    """
-    Validate CLI arguments.
-    """
-
-    if args.httpx is None and args.katana is None:
-        parser.error(
-            "At least one input file (--httpx or --katana) is required."
-        )
-
-    validate_file(parser, args.httpx, "HTTPX")
-    validate_file(parser, args.katana, "Katana")
-
-def print_summary(application) -> None:
-    """
-    Print a simple application summary.
-    """
-
-    table = Table(title="Application Summary")
-
-    table.add_column("Host", style="cyan")
-    table.add_column("Endpoints", justify="right")
-
-    total_endpoints = 0
-
-    for host in sorted(application.hosts.values(), key=lambda h: h.hostname):
-        endpoint_count = len(host.endpoints)
-        total_endpoints += endpoint_count
-
-        table.add_row(
-            host.hostname,
-            str(endpoint_count),
-        )
-
-    console.print(table)
-
-    console.print()
-    console.print(f"[bold]Hosts:[/bold] {len(application.hosts)}")
-    console.print(f"[bold]Endpoints:[/bold] {total_endpoints}")
-
-
-def main() -> None:
-    parser = build_parser()
     args = parser.parse_args()
 
-    validate_inputs(parser, args)
-
-    console.rule("[bold cyan]WebRViz[/bold cyan]")
-
-    merger = ApplicationMerger()
-
-    endpoint_groups = []
+    parsers = []
 
     if args.httpx:
-        console.print(f"[green][+][/green] Parsing HTTPX: {args.httpx}")
-
-        parser_httpx = HttpxParser(args.httpx)
-        endpoint_groups.append(parser_httpx.parse())
+        validate_file(args.httpx, "HTTPX")
+        parsers.append(HttpxParser(args.httpx))
 
     if args.katana:
-        console.print(f"[green][+][/green] Parsing Katana: {args.katana}")
+        validate_file(args.katana, "Katana")
+        parsers.append(KatanaParser(args.katana))
 
-        parser_katana = KatanaParser(args.katana)
-        endpoint_groups.append(parser_katana.parse())
+    if not parsers:
+        parser.error("No input files supplied.")
 
-    application = merger.merge(*endpoint_groups)
+    endpoints = chain.from_iterable(parser.parse() for parser in parsers)
 
-    console.print()
-    console.print("[bold green]✓ Parsing completed[/bold green]")
-    console.print()
+    application = ApplicationBuilder.build(endpoints)
 
-    print_summary(application)
+    #
+    # Temporary summary.
+    for host in application.root_hosts():
+        print(host.hostname)
 
+        for child in host.sorted_children:
+            print("   └──", child.hostname)
+    # Will be replaced in Milestone 5.
+    #
 
-if __name__ == "__main__":
-    main()
+    print()
+
+    print("Application Summary\n")
+
+    endpoint_count = 0
+
+    for host in application.all_hosts():
+        count = len(host.endpoints)
+
+        endpoint_count += count
+
+        print(f"{host.hostname:<25} {count}")
+
+    print()
+
+    print(f"Hosts: {len(application.hosts)}")
+    print(f"Endpoints: {endpoint_count}")

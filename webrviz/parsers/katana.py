@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from webrviz.models import Endpoint
+from webrviz.models.endpoint import Endpoint
 from webrviz.parsers.base import BaseParser
 from webrviz.utils.url import endpoint_from_url
 

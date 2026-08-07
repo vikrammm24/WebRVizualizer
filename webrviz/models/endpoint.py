@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class Endpoint:
     """
     Represents a discovered URL endpoint.

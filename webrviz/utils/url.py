@@ -1,6 +1,6 @@
 from urllib.parse import urlparse
 
-from webrviz.models import Endpoint
+from webrviz.models.endpoint import Endpoint
 
 
 def endpoint_from_url(url: str) -> Endpoint:

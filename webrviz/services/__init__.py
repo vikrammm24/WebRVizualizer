@@ -1,5 +1,5 @@
-from .merger import ApplicationMerger
+from .builder import ApplicationBuilder
 
 __all__ = [
-    "ApplicationMerger",
+    "ApplicationBuilder",
 ]
