@@ -59,12 +59,3 @@ class Host:
             )
         )
 
-    @property
-    def sorted_children(self) -> list["Host"]:
-        """
-        Return child hosts sorted alphabetically.
-        """
-        return sorted(
-            self.children.values(),
-            key=lambda host: host.hostname,
-        )

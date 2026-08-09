@@ -8,6 +8,8 @@ import sys
 from webrviz.parsers.httpx import HttpxParser
 from webrviz.parsers.katana import KatanaParser
 from webrviz.services.builder import ApplicationBuilder
+from webrviz.output import Printer
+from webrviz.services import TreeBuilder
 
 
 def validate_file(path: Path, name: str) -> None:
@@ -74,14 +76,15 @@ def main() -> None:
     application = ApplicationBuilder.build(endpoints)
 
     #
-    # Temporary summary.
-    for host in application.root_hosts():
-        print(host.hostname)
-
-        for child in host.sorted_children:
-            print("   └──", child.hostname)
-    # Will be replaced in Milestone 5.
+    # Render the application
     #
+
+    tree_builder = TreeBuilder()
+    printer = Printer()
+
+    tree = tree_builder.build(application)
+
+    printer.print(tree)
 
     print()
 

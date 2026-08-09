@@ -64,4 +64,4 @@ class Application:
         """
 
         for host in self.all_hosts():
-            yield from host.sorted_endpoints()
+            yield from host.endpoints
