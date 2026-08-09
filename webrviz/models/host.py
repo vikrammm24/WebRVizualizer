@@ -1,56 +1,41 @@
-from __future__ import annotations
-
 from dataclasses import dataclass, field
 
 from webrviz.models.endpoint import Endpoint
+from webrviz.utils.domains import get_parent_domain
 
 
-@dataclass(slots=True)
+@dataclass
 class Host:
-    """
-    Represents a hostname within an application.
-
-    A Host owns:
-        • endpoints discovered on that hostname
-        • child subdomains
-    """
-
     hostname: str
-
     endpoints: list[Endpoint] = field(default_factory=list)
-
     children: dict[str, "Host"] = field(default_factory=dict)
-
-    def add_endpoint(self, endpoint: Endpoint) -> None:
-        """
-        Add an endpoint to this host.
-        """
-        self.endpoints.append(endpoint)
-
-    def add_child(self, child: "Host") -> None:
-        """
-        Attach a child subdomain.
-        """
-        self.children[child.hostname] = child
+    parent: "Host | None" = None
 
     @property
     def is_root(self) -> bool:
         """
-        Whether this host is considered a root domain.
-
-        This property is populated by the builder.
+        Whether this host is a root domain.
         """
-        return "." not in self.hostname or len(self.hostname.split(".")) == 2
+        return get_parent_domain(self.hostname) is None
+
+    def add_endpoint(self, endpoint: Endpoint) -> None:
+        self.endpoints.append(endpoint)
+
+    def add_child(self, child: "Host") -> None:
+        child.parent = self
+        self.children[child.hostname] = child
 
     def sort_endpoints(self) -> None:
         """
-        Sort endpoints alphabetically in place.
+        Sort endpoints attached to this host.
         """
-        self.endpoints.sort(key=lambda endpoint: endpoint.full_url)
+        self.endpoints.sort(
+            key=lambda endpoint: endpoint.path
+        )
 
     def sort_children(self) -> None:
         """
-        Sort child hosts alphabetically in place.
+        Sort child hosts by hostname.
         """
         self.children = dict(
             sorted(
@@ -59,3 +44,12 @@ class Host:
             )
         )
 
+    def sort(self) -> None:
+        """
+        Sort this host and all descendants.
+        """
+        self.sort_endpoints()
+        self.sort_children()
+
+        for child in self.children.values():
+            child.sort()
