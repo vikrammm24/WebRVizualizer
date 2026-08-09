@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from itertools import chain
 from pathlib import Path
 import sys
@@ -14,46 +14,63 @@ from webrviz.services import TreeBuilder
 
 def validate_file(path: Path, name: str) -> None:
     """
-    Validate that a supplied file exists.
+    Validate that a supplied path exists and is a regular file.
     """
 
-    if path.exists():
-        return
+    if not path.exists():
+        resolved = path.resolve()
 
-    resolved = path.resolve()
+        print()
+        print(f"{name} file not found.")
+        print()
+        print(f"Provided path : {path}")
+        print(f"Resolved path : {resolved}")
+        print("\nRelative paths are resolved from your current working directory.")
+        print(
+            "Use an absolute path or run the command from the directory "
+            "where the file exists."
+        )
 
-    print()
+        sys.exit(1)
 
-    print(f"{name} file not found.\n")
+    if not path.is_file():
+        resolved = path.resolve()
 
-    print(f"Provided path : {path}")
-    print(f"Resolved path : {resolved}")
+        print()
+        print(f"{name} path is not a file.")
+        print()
+        print(f"Provided path : {path}")
+        print(f"Resolved path : {resolved}")
+        print("\nThe supplied path points to a directory or another non-file object.")
 
-    print("\nRelative paths are resolved from your current working directory.")
-
-    print(
-        "Use an absolute path or run the command from the directory where the file exists."
-    )
-
-    sys.exit(1)
+        sys.exit(1)
 
 
 def main() -> None:
     parser = ArgumentParser(
         prog="webrviz",
         description="WebRViz - Web Application Visualizer",
+        epilog=(
+            "Examples:\n"
+            "  webrviz --httpx httpx.txt\n"
+            "  webrviz --katana katana.txt\n"
+            "  webrviz --httpx httpx.txt --katana katana.txt"
+        ),
+        formatter_class=lambda prog: __import__("argparse").RawDescriptionHelpFormatter(
+            prog
+        ),
     )
 
     parser.add_argument(
         "--httpx",
         type=Path,
-        help="Path to httpx output",
+        help="Path to httpx output file",
     )
 
     parser.add_argument(
         "--katana",
         type=Path,
-        help="Path to katana output",
+        help="Path to katana output file",
     )
 
     args = parser.parse_args()

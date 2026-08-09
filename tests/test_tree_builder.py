@@ -42,16 +42,18 @@ def test_tree_builder_creates_application_root() -> None:
 def test_tree_builder_renders_root_host() -> None:
     application = Application()
 
-    host = application.get_or_create_host("example.com")
+    application.get_or_create_host("example.com")
 
     tree = TreeBuilder.build(application)
 
     labels = get_child_labels(tree)
 
-    assert labels == ["[bold green]example.com[/]"]
+    assert labels == [
+        "[bold green]example.com[/]",
+    ]
 
 
-def test_tree_builder_renders_endpoint() -> None:
+def test_tree_builder_renders_endpoint_path() -> None:
     application = Application()
 
     host = application.get_or_create_host("example.com")
@@ -69,22 +71,49 @@ def test_tree_builder_renders_endpoint() -> None:
 
     labels = get_child_labels(host_node)
 
-    assert labels == ["[white]/login[/]"]
+    assert labels == [
+        "[white]login[/]",
+    ]
 
 
-def test_tree_builder_renders_multiple_endpoints() -> None:
+def test_tree_builder_renders_nested_endpoint_path() -> None:
+    application = Application()
+
+    host = application.get_or_create_host("example.com")
+
+    endpoint = create_endpoint(
+        "example.com",
+        "/api/v1/users",
+    )
+
+    host.add_endpoint(endpoint)
+
+    tree = TreeBuilder.build(application)
+
+    host_node = tree.children[0]
+
+    api_node = host_node.children[0]
+    v1_node = api_node.children[0]
+    users_node = v1_node.children[0]
+
+    assert str(api_node.label) == "[white]api[/]"
+    assert str(v1_node.label) == "[white]v1[/]"
+    assert str(users_node.label) == "[white]users[/]"
+
+
+def test_tree_builder_renders_multiple_endpoint_paths() -> None:
     application = Application()
 
     host = application.get_or_create_host("example.com")
 
     endpoint_one = create_endpoint(
         "example.com",
-        "/",
+        "/api/v1/users",
     )
 
     endpoint_two = create_endpoint(
         "example.com",
-        "/login",
+        "/api/v1/admin",
     )
 
     host.add_endpoint(endpoint_one)
@@ -94,11 +123,14 @@ def test_tree_builder_renders_multiple_endpoints() -> None:
 
     host_node = tree.children[0]
 
-    labels = get_child_labels(host_node)
+    api_node = host_node.children[0]
+    v1_node = api_node.children[0]
+
+    labels = get_child_labels(v1_node)
 
     assert labels == [
-        "[white]/[/]",
-        "[white]/login[/]",
+        "[white]admin[/]",
+        "[white]users[/]",
     ]
 
 
@@ -143,7 +175,7 @@ def test_tree_builder_renders_nested_hosts() -> None:
     ]
 
 
-def test_tree_builder_renders_endpoints_before_child_hosts() -> None:
+def test_tree_builder_renders_endpoint_paths_before_child_hosts() -> None:
     application = Application()
 
     root = application.get_or_create_host("example.com")
@@ -164,6 +196,6 @@ def test_tree_builder_renders_endpoints_before_child_hosts() -> None:
     labels = get_child_labels(root_node)
 
     assert labels == [
-        "[white]/login[/]",
+        "[white]login[/]",
         "[bold green]api.example.com[/]",
     ]

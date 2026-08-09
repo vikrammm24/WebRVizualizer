@@ -4,7 +4,6 @@ from rich.tree import Tree
 
 from webrviz.models.application import Application
 from webrviz.models.host import Host
-from webrviz.services.path_tree import PathNode, PathTree
 
 
 class TreeBuilder:
@@ -12,8 +11,8 @@ class TreeBuilder:
     Builds a Rich Tree from an Application.
 
     This class contains no printing logic.
-    It is responsible only for converting the application
-    model into a Rich Tree.
+    It is only responsible for converting the application model
+    into a Rich Tree.
     """
 
     @staticmethod
@@ -35,42 +34,16 @@ class TreeBuilder:
         Recursively add a Host and its descendants to the tree.
         """
 
-        host_node = parent.add(
-            f"[bold green]{host.hostname}[/]"
-        )
+        host_node = parent.add(f"[bold green]{host.hostname}[/]")
 
         #
-        # Build endpoint path hierarchy.
+        # Add endpoints.
         #
-        path_tree = PathTree()
-
         for endpoint in host.endpoints:
-            path_tree.add(endpoint)
-
-        #
-        # Render endpoint paths.
-        #
-        for node in path_tree.nodes():
-            TreeBuilder._add_path_node(host_node, node)
+            host_node.add(f"[white]{endpoint.path}[/]")
 
         #
         # Add child hosts.
         #
         for child in host.children.values():
             TreeBuilder._add_host(host_node, child)
-
-    @staticmethod
-    def _add_path_node(
-        parent: Tree,
-        node: PathNode,
-    ) -> None:
-        """
-        Recursively render a PathNode and its descendants.
-        """
-
-        path_node = parent.add(
-            f"[white]{node.segment}[/]"
-        )
-
-        for child in node.children.values():
-            TreeBuilder._add_path_node(path_node, child)
