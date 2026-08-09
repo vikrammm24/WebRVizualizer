@@ -85,21 +85,3 @@ def main() -> None:
     tree = tree_builder.build(application)
 
     printer.print(tree)
-
-    print()
-
-    print("Application Summary\n")
-
-    endpoint_count = 0
-
-    for host in application.all_hosts():
-        count = len(host.endpoints)
-
-        endpoint_count += count
-
-        print(f"{host.hostname:<25} {count}")
-
-    print()
-
-    print(f"Hosts: {len(application.hosts)}")
-    print(f"Endpoints: {endpoint_count}")
