@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 
 from webrviz.models.endpoint import Endpoint
+from webrviz.models.host_metadata import HostMetadata
 from webrviz.utils.domains import get_parent_domain
 
 
@@ -10,6 +11,7 @@ class Host:
     endpoints: list[Endpoint] = field(default_factory=list)
     children: dict[str, "Host"] = field(default_factory=dict)
     parent: "Host | None" = None
+    metadata: HostMetadata = field(default_factory=HostMetadata)
 
     @property
     def is_root(self) -> bool:
@@ -29,9 +31,7 @@ class Host:
         """
         Sort endpoints attached to this host.
         """
-        self.endpoints.sort(
-            key=lambda endpoint: endpoint.path
-        )
+        self.endpoints.sort(key=lambda endpoint: endpoint.path)
 
     def sort_children(self) -> None:
         """

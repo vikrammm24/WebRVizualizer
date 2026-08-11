@@ -1,0 +1,6 @@
+https://example.com/
+https://example.com/login
+https://example.com/login?id=3
+https://example.com/api
+https://example.com/api?format=json
+https://api.example.com/
