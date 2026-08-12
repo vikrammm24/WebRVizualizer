@@ -14,6 +14,7 @@
 > **WebRViz** turns reconnaissance output into a structured, readable web application attack-surface map.
 
 Instead of manually reading large lists of URLs, WebRViz organizes discovered hosts and endpoints into a hierarchical terminal tree.
+WebApplicaton Recon Visualizer 
 
 ---
 
@@ -536,3 +537,22 @@ The goal is to make their output easier to understand.
 ## License
 
 See [LICENSE](LICENSE).
+
+
+Though it is not an offensive security tool which would cause harm to any assests of any company
+## Responsible Use
+
+WebRViz is intended for authorized security research, penetration testing,
+bug bounty programs, CTFs, and security testing of systems you own or have
+explicit permission to assess.
+
+Users are responsible for complying with applicable laws, regulations, and
+the scope and rules of any security testing program they participate in.
+
+## Contributing / Feedback
+
+WebRViz is currently being developed as an open-source project.
+
+Feedback, testing, ideas, bug reports, and contributions are welcome.
+
+If you work with reconnaissance tooling and have ideas for how reconnaissance output could be represented more effectively, I'd especially like to hear them.
