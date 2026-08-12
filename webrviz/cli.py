@@ -5,6 +5,7 @@ from itertools import chain
 from pathlib import Path
 import sys
 
+from webrviz.banner import print_banner
 from webrviz.parsers.httpx import HttpxParser
 from webrviz.parsers.katana import KatanaParser
 from webrviz.services.builder import ApplicationBuilder
@@ -87,6 +88,8 @@ def main() -> None:
 
     if not parsers:
         parser.error("No input files supplied.")
+
+    print_banner()
 
     endpoints = chain.from_iterable(parser.parse() for parser in parsers)
 
