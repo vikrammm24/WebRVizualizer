@@ -48,6 +48,8 @@ def validate_file(path: Path, name: str) -> None:
 
 
 def main() -> None:
+
+    print_banner()
     parser = ArgumentParser(
         prog="webrviz",
         description="WebRViz - Web Application Visualizer",
@@ -88,8 +90,6 @@ def main() -> None:
 
     if not parsers:
         parser.error("No input files supplied.")
-
-    print_banner()
 
     endpoints = chain.from_iterable(parser.parse() for parser in parsers)
 
